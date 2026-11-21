@@ -15,10 +15,9 @@ jobs:
           mkdir -p certs
           openssl req -x509 -newkey rsa:2048 -keyout certs/mac.key -out certs/mac.cert -days 365 -nodes -subj "/CN=QuestDock Dev"
           openssl pkcs12 -export -in certs/mac.cert -inkey certs/mac.key -out certs/mac.p12 -passout pass:
-      - name: Export CSC_LINK (base64 PFX)
-        run: echo "CSC_LINK=$(base64 -w0 certs/mac.p12)" >> "$GITHUB_ENV"
-      - name: Build (macOS, self-signed)
+      - name: Build (macOS, self-signed cert)
         env:
+          CSC_LINK: certs/mac.p12
           CSC_KEY_PASSWORD: ""
         run: npm run dist:mac
       - uses: actions/upload-artifact@v4
@@ -34,18 +33,16 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - name: Generate self-signed cert
+      - name: Generate self-signed cert (PFX)
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path certs -Force | Out-Null
-          $c = New-SelfSignedCertificate -CertificateType CodeSigning -SubjectName "CN=QuestDock Dev" -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -KeyAlgorithm RSA -KeyLength 2048 -NotAfter "2030-01-01" -ExportCertificateArrays -FilePath certs/win.pfx
-      - name: Export WIN_CSC_LINK (base64)
-        shell: pwsh
-        run: |
-          $bytes = [IO.File]::ReadAllBytes("certs/win.pfx")
-          Add-Content -Path $env:GITHUB_ENV -Value "WIN_CSC_LINK=$([Convert]::ToBase64String($bytes))"
-      - name: Build (Windows, self-signed)
+          $cert = New-SelfSignedCertificate -SubjectName "CN=QuestDock Dev" -DnsName QuestDock -KeyExportPolicy Exportable -KeyAlgorithm RSA -KeyLength 2048 -NotAfter "2030-01-01"
+          $pw = New-Object System.Security.SecureString
+          $cert | Export-PfxCertificate -Type PFX -FilePath certs/win.pfx -Password $pw
+      - name: Build (Windows, self-signed cert)
         env:
+          WIN_CSC_LINK: certs/win.pfx
           WIN_CSC_PASSWORD: ""
         run: npm run dist:win
       - uses: actions/upload-artifact@v4
