@@ -97,7 +97,7 @@ signatures. Linux packages are not signed. These certificates are not trusted by
 each run creates a new identity, and the macOS builds are not notarized. Normal public distribution
 requires appropriate trusted signing credentials; macOS also requires Apple notarization.
 
-`scripts/gen-selfsign-certs.sh` generates local development certificates in `certs/`. The private
+`scripts/gen-selfsign-certs.sh` requires OpenSSL 3 and generates local development certificates in `certs/`. The private
 keys and password are for development only; never use them for production or publish them.
 
 ## Layout

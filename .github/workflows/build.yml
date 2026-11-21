@@ -11,12 +11,13 @@ jobs:
           node-version: 22
       - run: npm install
       - name: Generate self-signed cert (PFX with key)
+        timeout-minutes: 2
         run: |
           mkdir -p certs
           openssl req -x509 -newkey rsa:2048 -keyout certs/mac.key -out certs/mac.cert -days 365 -nodes \
             -subj "/CN=QuestDock Dev" -addext "extendedKeyUsage=codeSigning" -addext "keyUsage=digitalSignature"
           openssl pkcs12 -export -legacy -in certs/mac.cert -inkey certs/mac.key -out certs/mac.p12 -passout pass:questdock-dev
-          security add-trusted-cert -r trustRoot -k "$HOME/Library/Keychains/login.keychain-db" certs/mac.cert
+          sudo -n security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain certs/mac.cert
       - name: Build (macOS)
         env:
           CSC_LINK: ${{ github.workspace }}/certs/mac.p12
@@ -46,13 +47,15 @@ jobs:
       - run: npm install
       - name: Generate self-signed cert (PFX)
         shell: pwsh
+        timeout-minutes: 2
         run: |
           New-Item -ItemType Directory -Path certs -Force | Out-Null
           $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=QuestDock Dev" -CertStoreLocation Cert:\CurrentUser\My -KeyExportPolicy Exportable -KeyAlgorithm RSA -KeyLength 2048 -NotAfter (Get-Date).AddYears(1)
           $pw = ConvertTo-SecureString "questdock-dev" -AsPlainText -Force
           $cert | Export-PfxCertificate -FilePath certs/win.pfx -Password $pw
           $cert | Export-Certificate -FilePath certs/win.cer
-          Import-Certificate -FilePath certs/win.cer -CertStoreLocation Cert:\CurrentUser\Root
+          certutil.exe -f -addstore Root certs/win.cer
+          if ($LASTEXITCODE -ne 0) { throw "Failed to trust the development certificate" }
           "SIGNING_THUMBPRINT=$($cert.Thumbprint)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Build (Windows)
         env:
