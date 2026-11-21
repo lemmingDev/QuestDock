@@ -20,9 +20,9 @@
     "fetch-tools": "node scripts/fetch-platform-tools.mjs",
     "capture": "electron . --capture",
     "dist": "npm run icon && npm run fetch-tools && electron-builder",
-    "dist:mac": "npm run icon && npm run fetch-tools && electron-builder --mac",
-    "dist:win": "npm run icon && npm run fetch-tools && electron-builder --win",
-    "dist:linux": "npm run icon && npm run fetch-tools && electron-builder --linux",
+    "dist:mac": "npm run icon && npm run fetch-tools && electron-builder --mac --publish never",
+    "dist:win": "npm run icon && npm run fetch-tools && electron-builder --win --publish never",
+    "dist:linux": "npm run icon && npm run fetch-tools && electron-builder --linux --publish never",
     "dist:dir": "npm run icon && npm run fetch-tools && electron-builder --dir"
   },
   "devDependencies": {
@@ -32,7 +32,7 @@
   "build": {
     "appId": "app.questdock.desktop",
     "productName": "QuestDock",
-    "copyright": "Copyright © 2026 QuestDock",
+    "copyright": "Copyright \u00a9 2026 QuestDock",
     "directories": {
       "output": "dist",
       "buildResources": "build"
