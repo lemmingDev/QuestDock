@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' file: data:; media-src 'self' file:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>QuestDock</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="titlebar" id="titlebar">
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M4.2 6.6h6.1c1 0 1.7.6 1.7 1.5v10.3c0 .8-.6 1.3-1.3 1.3H6.9c-1.5 0-2.7-1.2-2.7-2.7V6.6Z"
+              fill="currentColor"
+              opacity=".55"
+            />
+            <path
+              d="M19.8 6.6h-4.9c-1 0-1.7.6-1.7 1.5v10.3c0 .8.6 1.3 1.3 1.3h2.6c1.5 0 2.7-1.2 2.7-2.7V6.6Z"
+              fill="currentColor"
+            />
+          </svg>
+          <span class="brand-name">QuestDock</span>
+        </div>
+
+        <div class="device-slot" id="deviceSlot"></div>
+
+        <div class="titlebar-actions">
+          <button class="chip-btn" data-action="wireless" title="Connect over Wi-Fi">
+            <span class="dot"></span> Wi-Fi
+          </button>
+          <button class="chip-btn" data-action="screenshot" title="Take a screenshot">
+            Screenshot
+          </button>
+          <button class="chip-btn" data-action="record" id="recordBtn" title="Record the headset screen">
+            Record
+          </button>
+          <button class="chip-btn" data-action="live" title="Live preview of the headset screen">
+            Live
+          </button>
+          <button class="icon-btn" data-action="fullscreen" title="Toggle fullscreen (F11)">
+            <svg viewBox="0 0 20 20"><path d="M3 3h5v2H5v3H3V3Zm14 0h-5v2h3v3h2V3ZM3 17h5v-2H5v-3H3v5Zm14 0h-5v-2h3v-3h2v5Z" fill="currentColor"/></svg>
+          </button>
+          <button class="icon-btn" data-action="devices" title="Select headset">
+            <svg viewBox="0 0 20 20"><path d="M3 6h14v9H3Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 6V4.5h6V6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor"/><circle cx="12.5" cy="10.5" r="1" fill="currentColor"/></svg>
+          </button>
+          <button class="icon-btn" data-action="apps" title="Installed apps">
+            <svg viewBox="0 0 20 20"><path d="M6 2.5h3v5H6zM11 2.5h3v5h-3zM6 9h3v5H6zM11 9h3v5h-3z" fill="currentColor"/></svg>
+          </button>
+          <button class="icon-btn" data-action="settings" title="Settings">
+            <svg viewBox="0 0 20 20">
+              <path
+                d="M10 7.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Zm7 2.8c0 .4 0 .8-.1 1.2l1.6 1.2-1.7 2.9-1.9-.7c-.6.5-1.3.9-2 1.2l-.3 2h-3.3l-.3-2c-.7-.3-1.4-.7-2-1.2l-1.9.7-1.7-2.9 1.6-1.2a7 7 0 0 1 0-2.4L3.4 7.6l1.7-2.9 1.9.7c.6-.5 1.3-.9 2-1.2l.3-2h3.3l.3 2c.7.3 1.4.7 2 1.2l1.9-.7 1.7 2.9-1.6 1.2c.1.4.1.8.1 1.2Z"
+                fill="currentColor"
+                fill-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="pane" data-pane="local">
+          <header class="pane-head">
+            <div class="pane-heading">
+              <span class="pane-label">This computer</span>
+              <span class="pane-note" id="localNote"></span>
+            </div>
+            <div class="pane-tools">
+              <button class="icon-btn" data-nav="local:back" title="Back">
+                <svg viewBox="0 0 20 20"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="local:up" title="Up one folder">
+                <svg viewBox="0 0 20 20"><path d="M10 15V5m0 0L5.5 9.5M10 5l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="local:home" title="Home folder">
+                <svg viewBox="0 0 20 20"><path d="M4 9.5 10 4l6 5.5V16h-4v-4H8v4H4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="local:places" title="Places and drives">
+                <svg viewBox="0 0 20 20"><path d="M4 6h12M4 10h12M4 14h8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="local:refresh" title="Refresh">
+                <svg viewBox="0 0 20 20"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 4v3.5h-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="local:newFolder" title="New folder">
+                <svg viewBox="0 0 20 20"><path d="M3 6.5h5l1.3 1.7H17v7.3H3Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 11v3m-1.5-1.5h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </header>
+
+          <div class="path-bar" id="localCrumbs"></div>
+
+          <div class="list-bar">
+            <div class="search">
+              <svg viewBox="0 0 20 20"><circle cx="8.6" cy="8.6" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m12.2 12.2 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <input type="search" id="localSearch" placeholder="Filter this folder" spellcheck="false" />
+            </div>
+            <div class="selection-actions" id="localActions"></div>
+          </div>
+
+          <div class="columns" aria-hidden="true">
+            <span class="col-name">Name</span>
+            <span class="col-size">Size</span>
+            <span class="col-date">Modified</span>
+          </div>
+          <div class="list" id="localList" tabindex="0"></div>
+          <footer class="pane-foot" id="localFoot"></footer>
+        </section>
+
+        <section class="pane" data-pane="remote" id="remotePane">
+          <header class="pane-head">
+            <div class="pane-heading">
+              <span class="pane-label" id="remoteLabel">Headset</span>
+              <span class="pane-note" id="remoteNote"></span>
+            </div>
+            <div class="pane-tools">
+              <button class="icon-btn" data-nav="remote:back" title="Back">
+                <svg viewBox="0 0 20 20"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="remote:up" title="Up one folder">
+                <svg viewBox="0 0 20 20"><path d="M10 15V5m0 0L5.5 9.5M10 5l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="remote:sdcard" title="Go to /sdcard">
+                <svg viewBox="0 0 20 20"><rect x="5" y="2.5" width="10" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7.5 5.5h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="remote:volumes" title="Storage and USB drives">
+                <svg viewBox="0 0 20 20"><rect x="3" y="5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="remote:refresh" title="Refresh">
+                <svg viewBox="0 0 20 20"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 4v3.5h-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn" data-nav="remote:newFolder" title="New folder">
+                <svg viewBox="0 0 20 20"><path d="M3 6.5h5l1.3 1.7H17v7.3H3Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 11v3m-1.5-1.5h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </header>
+
+          <div class="path-bar" id="remoteCrumbs"></div>
+
+          <div class="list-bar">
+            <div class="search">
+              <svg viewBox="0 0 20 20"><circle cx="8.6" cy="8.6" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m12.2 12.2 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <input type="search" id="remoteSearch" placeholder="Filter this folder" spellcheck="false" />
+            </div>
+            <div class="selection-actions" id="remoteActions"></div>
+          </div>
+
+          <div class="columns" aria-hidden="true">
+            <span class="col-name">Name</span>
+            <span class="col-size">Size</span>
+            <span class="col-date">Modified</span>
+          </div>
+          <div class="list" id="remoteList" tabindex="0"></div>
+          <footer class="pane-foot" id="remoteFoot"></footer>
+          <div class="drop-veil" id="dropVeil">
+            <div class="drop-card">
+              <strong>Drop to upload</strong>
+              <span id="dropTarget">/sdcard</span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="dock" id="dock">
+        <div class="dock-head">
+          <button class="dock-toggle" id="dockToggle" aria-expanded="true">
+            <svg viewBox="0 0 20 20"><path d="m6 12 4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Transfers
+          </button>
+          <span class="dock-summary" id="dockSummary">Nothing queued</span>
+          <div class="dock-actions" id="dockActions"></div>
+        </div>
+        <div class="dock-body" id="dockBody">
+          <div class="dock-list" id="dockList"></div>
+        </div>
+      </footer>
+    </div>
+
+    <div class="toast-stack" id="toastStack"></div>
+    <div class="context-menu" id="contextMenu" hidden></div>
+    <div class="modal-root" id="modalRoot" hidden></div>
+
+    <script src="../shared/paths.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

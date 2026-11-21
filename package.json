@@ -1,0 +1,151 @@
+{
+  "name": "questdock",
+  "productName": "QuestDock",
+  "version": "0.1.0",
+  "description": "Browse and transfer files on Meta Quest 2 and Quest 3 over ADB.",
+  "homepage": "https://github.com/questdock-app/questdock",
+  "desktopName": "QuestDock",
+  "main": "src/main/main.js",
+  "author": {
+    "name": "QuestDock",
+    "email": "hello@questdock.app"
+  },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "test": "node test/run-tests.js",
+    "icon": "node scripts/make-icon.mjs",
+    "fetch-tools": "node scripts/fetch-platform-tools.mjs",
+    "capture": "electron . --capture",
+    "dist": "npm run icon && npm run fetch-tools && electron-builder",
+    "dist:mac": "npm run icon && npm run fetch-tools && electron-builder --mac",
+    "dist:win": "npm run icon && npm run fetch-tools && electron-builder --win",
+    "dist:linux": "npm run icon && npm run fetch-tools && electron-builder --linux",
+    "dist:dir": "npm run icon && npm run fetch-tools && electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "45.3.4",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "app.questdock.desktop",
+    "productName": "QuestDock",
+    "copyright": "Copyright © 2026 QuestDock",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json",
+      "!**/*.map",
+      "!**/node_modules/**"
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "darkModeSupport": true,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSLocalNetworkUsageDescription": "QuestDock uses your local network to connect to your Meta Quest over Wi-Fi ADB.",
+        "NSBonjourServices": [
+          "_adb-tls-connect._tcp",
+          "_adb-tls-pairing._tcp"
+        ]
+      },
+      "extraResources": [
+        {
+          "from": "vendor/darwin",
+          "to": "vendor/darwin"
+        }
+      ]
+    },
+    "dmg": {
+      "title": "QuestDock ${version}",
+      "iconSize": 110,
+      "contents": [
+        {
+          "x": 150,
+          "y": 190,
+          "type": "file"
+        },
+        {
+          "x": 400,
+          "y": 190,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "extraResources": [
+        {
+          "from": "vendor/win32-x64",
+          "to": "vendor/win32-x64"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "shortcutName": "QuestDock"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "Utility",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "extraResources": [
+        {
+          "from": "vendor/linux-x64",
+          "to": "vendor/linux-x64"
+        }
+      ]
+    }
+  }
+}

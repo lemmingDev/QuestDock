@@ -1,0 +1,6 @@
+adb binaries in this folder come from Google platform-tools.
+Generated 2026-11-21T17:49:05.203Z by scripts/fetch-platform-tools.mjs
+
+darwin: platform-tools_r37.0.3-darwin.zip sha1 d48920e2650321710b4d15d3acd9e277d59cd55b
+win32: platform-tools_r37.0.3-win.zip sha1 7fea85bc18d0480bc81d3603952d666f49496e5a
+linux: platform-tools_r37.0.3-linux.zip sha1 e1579b288a7ae4e9bc28dedec6a154d78b3c04ed
