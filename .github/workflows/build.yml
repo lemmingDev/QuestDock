@@ -11,7 +11,7 @@ jobs:
           node-version: 22
       - run: npm install
       - name: Generate self-signed cert
-        run: openssl req -x509 -newkey rsa:2048 -keyout certs/mac.key -out certs/mac.p12 -days 365 -nodes -subj "/CN=QuestDock Dev"
+        run: mkdir -p certs && openssl req -x509 -newkey rsa:2048 -keyout certs/mac.key -out certs/mac.p12 -days 365 -nodes -subj "/CN=QuestDock Dev"
       - name: Build (macOS, self-signed cert)
         env:
           CSC_LINK: certs/mac.p12
