@@ -15,10 +15,7 @@ jobs:
           mkdir -p certs
           openssl req -x509 -newkey rsa:2048 -keyout certs/mac.key -out certs/mac.cert -days 365 -nodes -subj "/CN=QuestDock Dev"
           openssl pkcs12 -export -in certs/mac.cert -inkey certs/mac.key -out certs/mac.p12 -passout pass:questdock-dev
-      - name: Build (macOS, self-signed cert)
-        env:
-          CSC_LINK: certs/mac.p12
-          CSC_KEY_PASSWORD: questdock-dev
+      - name: Build (macOS)
         run: npm run dist:mac
       - uses: actions/upload-artifact@v4
         with: { name: mac-dmg, path: "dist/*.dmg" }
@@ -40,10 +37,7 @@ jobs:
           $cert = New-SelfSignedCertificate -DnsName QuestDock -KeyExportPolicy Exportable -KeyAlgorithm RSA -KeyLength 2048 -NotAfter "2030-01-01"
           $pw = New-Object System.Security.SecureString
           $cert | Export-PfxCertificate -FilePath certs/win.pfx -Password $pw
-      - name: Build (Windows, self-signed cert)
-        env:
-          WIN_CSC_LINK: certs/win.pfx
-          WIN_CSC_PASSWORD: ""
+      - name: Build (Windows)
         run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with: { name: windows-installers, path: "dist/*.exe" }
