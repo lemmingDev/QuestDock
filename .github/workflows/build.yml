@@ -13,14 +13,28 @@ jobs:
       - name: Generate self-signed cert (PFX with key)
         run: |
           mkdir -p certs
-          openssl req -x509 -newkey rsa:2048 -keyout certs/mac.key -out certs/mac.cert -days 365 -nodes -subj "/CN=QuestDock Dev"
-          openssl pkcs12 -export -in certs/mac.cert -inkey certs/mac.key -out certs/mac.p12 -passout pass:questdock-dev
+          openssl req -x509 -newkey rsa:2048 -keyout certs/mac.key -out certs/mac.cert -days 365 -nodes \
+            -subj "/CN=QuestDock Dev" -addext "extendedKeyUsage=codeSigning" -addext "keyUsage=digitalSignature"
+          openssl pkcs12 -export -legacy -in certs/mac.cert -inkey certs/mac.key -out certs/mac.p12 -passout pass:questdock-dev
+          security add-trusted-cert -r trustRoot -k "$HOME/Library/Keychains/login.keychain-db" certs/mac.cert
       - name: Build (macOS)
+        env:
+          CSC_LINK: ${{ github.workspace }}/certs/mac.p12
+          CSC_KEY_PASSWORD: questdock-dev
+          CSC_NAME: QuestDock Dev
+          CSC_FOR_PULL_REQUEST: "true"
         run: npm run dist:mac
+      - name: Verify macOS signatures
+        run: |
+          for app in "dist/mac-arm64/QuestDock.app" "dist/mac/QuestDock.app"; do
+            test -d "$app"
+            codesign --verify --deep --strict --verbose=2 "$app"
+            codesign -dv --verbose=2 "$app" 2>&1 | grep -Fx "Authority=QuestDock Dev"
+          done
       - uses: actions/upload-artifact@v4
-        with: { name: mac-dmg, path: "dist/*.dmg" }
+        with: { name: mac-dmg, path: "dist/*.dmg", if-no-files-found: error }
       - uses: actions/upload-artifact@v4
-        with: { name: mac-zip, path: "dist/*.zip" }
+        with: { name: mac-zip, path: "dist/*.zip", if-no-files-found: error }
 
   windows:
     runs-on: windows-latest
@@ -34,13 +48,31 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path certs -Force | Out-Null
-          $cert = New-SelfSignedCertificate -DnsName QuestDock -KeyExportPolicy Exportable -KeyAlgorithm RSA -KeyLength 2048 -NotAfter "2030-01-01"
-          $pw = New-Object System.Security.SecureString
+          $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=QuestDock Dev" -CertStoreLocation Cert:\CurrentUser\My -KeyExportPolicy Exportable -KeyAlgorithm RSA -KeyLength 2048 -NotAfter (Get-Date).AddYears(1)
+          $pw = ConvertTo-SecureString "questdock-dev" -AsPlainText -Force
           $cert | Export-PfxCertificate -FilePath certs/win.pfx -Password $pw
+          $cert | Export-Certificate -FilePath certs/win.cer
+          Import-Certificate -FilePath certs/win.cer -CertStoreLocation Cert:\CurrentUser\Root
+          "SIGNING_THUMBPRINT=$($cert.Thumbprint)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Build (Windows)
+        env:
+          WIN_CSC_LINK: ${{ github.workspace }}\certs\win.pfx
+          WIN_CSC_KEY_PASSWORD: questdock-dev
         run: npm run dist:win
+      - name: Verify Windows signatures
+        shell: pwsh
+        run: |
+          $files = @(Get-ChildItem dist/*.exe)
+          if ($files.Count -eq 0) { throw "No Windows installer found" }
+          $files += Get-Item dist/win-unpacked/QuestDock.exe
+          foreach ($file in $files) {
+            $signature = Get-AuthenticodeSignature $file.FullName
+            if ($signature.Status -ne "Valid" -or $signature.SignerCertificate.Thumbprint -ne $env:SIGNING_THUMBPRINT) {
+              throw "Invalid or unexpected signature for $($file.FullName): $($signature.Status) $($signature.StatusMessage)"
+            }
+          }
       - uses: actions/upload-artifact@v4
-        with: { name: windows-installers, path: "dist/*.exe" }
+        with: { name: windows-installers, path: "dist/*.exe", if-no-files-found: error }
 
   linux:
     runs-on: ubuntu-latest
@@ -52,6 +84,6 @@ jobs:
       - run: npm install
       - run: npm run dist:linux
       - uses: actions/upload-artifact@v4
-        with: { name: linux-appimage, path: "dist/*.AppImage" }
+        with: { name: linux-appimage, path: "dist/*.AppImage", if-no-files-found: error }
       - uses: actions/upload-artifact@v4
-        with: { name: linux-deb, path: "dist/*.deb" }
+        with: { name: linux-deb, path: "dist/*.deb", if-no-files-found: error }

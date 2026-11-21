@@ -5,12 +5,11 @@ cd "$(dirname "$0")/.."
 mkdir -p certs
 cd certs
 
-# macOS: .p12 for electron-builder mac.cscLink
-openssl req -x509 -newkey rsa:2048 -keyout keychain.key -out mac.p12 \
-  -days 3650 -nodes -subj "/CN=QuestDock (self-signed dev)" 2>/dev/null
-echo "mac.p12 ready (set mac.cscLink + mac.cscKeyPassword, or unidSIGN identity)"
-
-# Windows: .pfx for electron-builder win.certificateFile
-openssl req -x509 -newkey rsa:2048 -keyout win.pfx -out win.cer \
-  -days 3650 -nodes -subj "/CN=QuestDock Dev" 2>/dev/null
-echo "win.pfx ready (set win.certificateFile + win.certificatePassword)"
+for platform in mac win; do
+  openssl req -x509 -newkey rsa:2048 -keyout "$platform.key" -out "$platform.cer" \
+    -days 365 -nodes -subj "/CN=QuestDock Dev" \
+    -addext "extendedKeyUsage=codeSigning" -addext "keyUsage=digitalSignature"
+  openssl pkcs12 -export -legacy -in "$platform.cer" -inkey "$platform.key" \
+    -out "$platform.p12" -passout pass:questdock-dev
+done
+echo "Development certificates generated in certs/ (password: questdock-dev)."

@@ -91,10 +91,14 @@ npm test   # 78 passed, 0 failed
 
 ## CI
 
-GitHub Actions builds **macOS, Windows and Linux** on every push/PR:
-[lemmingDev/QuestDock](https://github.com/lemmingDev/QuestDock). macOS/Windows builds use
-self‑signed certificates generated in‑runner (`certs/`); see `scripts/gen-selfsign-certs.sh`
-for the same in a local build.
+GitHub Actions builds **macOS, Windows and Linux** on every push/PR. The macOS and Windows
+jobs generate temporary self-signed development certificates, sign the builds and verify the
+signatures. Linux packages are not signed. These certificates are not trusted by other machines;
+each run creates a new identity, and the macOS builds are not notarized. Normal public distribution
+requires appropriate trusted signing credentials; macOS also requires Apple notarization.
+
+`scripts/gen-selfsign-certs.sh` generates local development certificates in `certs/`. The private
+keys and password are for development only; never use them for production or publish them.
 
 ## Layout
 
@@ -109,7 +113,7 @@ QuestDock/
   scripts/*         — build/test helpers (fetch-platform-tools, make-icon, gen-selfsign-certs)
   .github/workflows/build.yml
   vendor/*/         — platform adb
-  certs/            — generated self-signed certs (CI, via scripts/gen-selfsign-certs.sh)
+  certs/            — generated development certificates (not tracked)
 ```
 
 ## License
