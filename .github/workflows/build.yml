@@ -1,18 +1,26 @@
 name: Build
 on: [push, pull_request]
+
+env:
+  CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
 jobs:
   mac:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 22
+        with: { node-version: 22 }
       - run: npm install
-      - run: npm run dist:mac
+      - name: Generate self-signed certs
+        run: |
+          mkdir -p certs && cd certs
+          openssl req -x509 -newkey rsa:2048 -keyout mac.key -out mac.p12 -days 365 -nodes -subj "/CN=QuestDock Dev" 2>/dev/null
+      - name: Build (macOS, self-signed)
         env:
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CSC_LINK: ${{ steps[setup].outputs.mac_cert || '' }}
+          CSC_KEY_PASSWORD: ""
+        run: npm run dist:mac
       - uses: actions/upload-artifact@v4
         with: { name: mac-installers, path: dist/*.dmg, dist/*.zip }
   windows:
@@ -20,10 +28,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 22
+        with: { node-version: 22 }
       - run: npm install
-      - run: npm run dist:win
+      - name: Generate self-signed certs
+        run: |
+          New-Item -ItemType Directory -Path certs -Force
+          New-SelfSignedCertificate -CertificateType CodeSigning -SubjectName "CN=QuestDock Dev" -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -KeyAlgorithm RSA -KeyLength 2048 -ExportCertificateArrays -FilePath certs\win.pfx
+      - name: Build (Windows, self-signed)
+        env:
+          WIN_CSC_LINK: certs/win.pfx
+          WIN_CSC_PASSWORD: ""
+        run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with: { name: windows-installers, path: dist/*.exe }
   linux:
@@ -31,8 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 22
+        with: { node-version: 22 }
       - run: npm install
       - run: npm run dist:linux
       - uses: actions/upload-artifact@v4
