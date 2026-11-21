@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   mac:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -12,7 +12,11 @@ jobs:
       - run: npm install
       - name: Generate self-signed cert
         run: openssl req -x509 -newkey rsa:2048 -keyout certs/mac.key -out certs/mac.p12 -days 365 -nodes -subj "/CN=QuestDock Dev"
-      - run: npm run dist:mac
+      - name: Build (macOS, self-signed cert)
+        env:
+          CSC_LINK: certs/mac.p12
+          CSC_KEY_PASSWORD: ""
+        run: npm run dist:mac
       - uses: actions/upload-artifact@v4
         with: { name: mac-dmg, path: "dist/*.dmg" }
       - uses: actions/upload-artifact@v4
@@ -31,7 +35,11 @@ jobs:
         run: |
           New-Item -ItemType Directory -Path certs -Force | Out-Null
           openssl req -x509 -newkey rsa:2048 -keyout certs/win.key -out certs/win.pfx -days 365 -nodes -subj "/CN=QuestDock Dev"
-      - run: npm run dist:win
+      - name: Build (Windows, self-signed cert)
+        env:
+          WIN_CSC_LINK: certs/win.pfx
+          WIN_CSC_PASSWORD: ""
+        run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with: { name: windows-installers, path: "dist/*.exe" }
 
